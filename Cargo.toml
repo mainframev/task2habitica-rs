@@ -7,7 +7,13 @@ authors = ["Victor Genaev <vgenaev@gmail.com>"]
 license = "MIT"
 description = "Sync Taskwarrior tasks with Habitica"
 repository = "https://github.com/mainframev/task2habitica-rs"
+readme = "README.md"
 keywords = ["taskwarrior", "habitica", "productivity", "sync"]
+categories = ["command-line-utilities"]
+exclude = [
+    ".github/",
+    "INSTALL.md",
+]
 
 [[bin]]
 name = "task2habitica"
