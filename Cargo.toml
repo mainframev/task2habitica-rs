@@ -1,0 +1,72 @@
+[package]
+name = "task2habitica"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.70"
+authors = ["Victor Genaev <vgenaev@gmail.com>"]
+license = "MIT"
+description = "Sync Taskwarrior tasks with Habitica"
+repository = "https://github.com/mainframev/task2habitica-rs"
+keywords = ["taskwarrior", "habitica", "productivity", "sync"]
+categories = ["command-line-utilities"]
+
+[[bin]]
+name = "task2habitica"
+path = "src/main.rs"
+
+[dependencies]
+reqwest = { version = "0.11", features = ["json", "blocking"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+clap = { version = "4.4", features = ["derive"] }
+anyhow = "1.0"
+thiserror = "1.0"
+
+chrono = { version = "0.4", features = ["serde"] }
+
+uuid = { version = "1.6", features = ["serde", "v4"] }
+
+dirs = "5.0"
+
+[dev-dependencies]
+mockito = "1.2"
+tempfile = "3.8"
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+enum_glob_use = "deny"
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+unwrap_used = "warn"
+
+module_name_repetitions = "allow"
+must_use_candidate = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+too_many_lines = "allow"
+similar_names = "allow"
+uninlined_format_args = "allow"
+use_self = "allow"
+significant_drop_tightening = "allow"
+option_if_let_else = "allow"
+redundant_clone = "allow"
+cast_lossless = "allow"
+cast_possible_truncation = "allow"
+float_cmp = "allow"
+items_after_statements = "allow"
+manual_let_else = "allow"
+unused_self = "allow"
+match_same_arms = "allow"
+assigning_clones = "allow"
+no_effect_underscore_binding = "allow"
+ignore_without_reason = "allow"
+or_fun_call = "allow"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true

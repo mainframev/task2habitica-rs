@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+if command -v task2habitica >/dev/null; then
+    task2habitica exit
+else
+    echo "task2habitica is not installed. Taskwarrior is not syncing with Habitica." >&2
+    exit 0
+fi

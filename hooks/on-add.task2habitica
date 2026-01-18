@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+if command -v task2habitica >/dev/null; then
+    task2habitica add
+else
+    read -r new_task
+    echo "$new_task"
+    echo "task2habitica is not installed. Taskwarrior is not syncing with Habitica." >&2
+    exit 0
+fi

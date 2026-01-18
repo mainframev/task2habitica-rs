@@ -1,0 +1,25 @@
+# Rust build artifacts
+/target
+Cargo.lock
+
+# Backup files
+**/*.rs.bk
+*.pdb
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Test data
+test_data/
+*.test
+
+# Environment
+.env
+.env.local
