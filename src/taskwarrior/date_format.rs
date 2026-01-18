@@ -36,8 +36,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use serde::Deserialize;
+
+    use super::*;
 
     #[derive(Deserialize)]
     struct TestStruct {
@@ -49,6 +50,9 @@ mod tests {
     fn test_taskwarrior_date_format() {
         let json = r#"{"date":"20260118T184624Z"}"#;
         let parsed: TestStruct = serde_json::from_str(json).expect("Failed to parse");
-        assert_eq!(parsed.date.format("%Y%m%dT%H%M%SZ").to_string(), "20260118T184624Z");
+        assert_eq!(
+            parsed.date.format("%Y%m%dT%H%M%SZ").to_string(),
+            "20260118T184624Z"
+        );
     }
 }

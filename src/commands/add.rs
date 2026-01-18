@@ -19,7 +19,11 @@ pub fn handle_add(config: &Config) -> Result<()> {
 
     // Debug: log the raw input if verbose mode
     if config.verbose {
-        eprintln!("DEBUG: Received JSON (length {}): {}", task_json.len(), task_json);
+        eprintln!(
+            "DEBUG: Received JSON (length {}): {}",
+            task_json.len(),
+            task_json
+        );
     }
 
     // Parse the task

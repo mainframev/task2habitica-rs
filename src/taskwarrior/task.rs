@@ -147,13 +147,11 @@ impl Task {
 
     /// Check if task has a note (based on note prefix in annotations)
     pub fn has_note_annotation(&self, note_prefix: &str) -> bool {
-        self.annotations
-            .as_ref()
-            .is_some_and(|annos| {
-                annos
-                    .iter()
-                    .any(|anno| anno.description.trim().starts_with(note_prefix))
-            })
+        self.annotations.as_ref().is_some_and(|annos| {
+            annos
+                .iter()
+                .any(|anno| anno.description.trim().starts_with(note_prefix))
+        })
     }
 
     /// Filter annotations to only keep non-note annotations
