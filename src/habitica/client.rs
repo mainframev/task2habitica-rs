@@ -242,7 +242,7 @@ impl HabiticaClient {
             task_id,
             direction.as_str()
         );
-        let response = self.client.post(&url).send()?;
+        let response = self.client.post(&url).body("").send()?;
 
         // Treat 404 as success with no stats update - task already doesn't exist
         if response.status() == reqwest::StatusCode::NOT_FOUND {
