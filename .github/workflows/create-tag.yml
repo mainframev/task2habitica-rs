@@ -18,9 +18,10 @@ jobs:
     steps:
       # Use PAT to checkout so that tag push triggers release workflow
       # GITHUB_TOKEN would not trigger other workflows (GitHub security feature)
+      # Use merge_commit_sha to ensure we get the actual merged code, not a stale master ref
       - uses: actions/checkout@v4
         with:
-          ref: master
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
           fetch-depth: 0
           token: ${{ secrets.RELEASE_TOKEN }}
 
