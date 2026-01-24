@@ -43,7 +43,19 @@ chmod +x ~/.task/hooks/*.task2habitica
 
 ## Configuration
 
-### 1. Add Habitica Credentials to .taskrc
+### 1. Add Habitica Credentials
+
+You can configure your Habitica credentials using either environment variables or your `.taskrc` file.
+Environment variables take precedence if both are set.
+
+#### Environment Variables (Recommended)
+
+```bash
+export HABITICA_USER_ID=YOUR_USER_ID
+export HABITICA_API_KEY=YOUR_API_KEY
+```
+
+#### .taskrc
 
 Add your Habitica user ID and API key to your `taskrc` file:
 
