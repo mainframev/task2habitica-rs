@@ -20,7 +20,7 @@ pub enum Error {
     #[error("Failed to parse Taskwarrior output: {0}")]
     TaskwarriorParseFailed(String),
 
-    #[error("Missing or malformed Habitica credentials in .taskrc. Please set habitica.user_id and habitica.api_key")]
+    #[error("Missing or malformed Habitica credentials. Set HABITICA_USER_ID and HABITICA_API_KEY environment variables, or habitica.user_id and habitica.api_key in .taskrc")]
     InvalidHabiticaCredentials,
 
     #[error("Habitica API error: {0}")]

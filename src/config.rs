@@ -1,4 +1,4 @@
-use std::{path::PathBuf, process::Command};
+use std::{env, path::PathBuf, process::Command};
 
 use crate::error::{Error, Result};
 
@@ -26,11 +26,13 @@ impl Config {
         let version_str = String::from_utf8_lossy(&version_output.stdout);
         Self::check_version(&version_str)?;
 
-        // Read Habitica credentials
-        let habitica_user_id = Self::get_taskrc_value("rc.habitica.user_id")?;
-        let habitica_api_key = Self::get_taskrc_value("rc.habitica.api_key")?;
+        // Read Habitica credentials (env vars take precedence over .taskrc)
+        let habitica_user_id =
+            Self::get_habitica_credential("HABITICA_USER_ID", "rc.habitica.user_id")?;
+        let habitica_api_key =
+            Self::get_habitica_credential("HABITICA_API_KEY", "rc.habitica.api_key")?;
 
-        // Validate credentials are UUID format
+        // Validate credentials are present
         if habitica_user_id.is_empty() || habitica_api_key.is_empty() {
             return Err(Error::InvalidHabiticaCredentials);
         }
@@ -120,6 +122,20 @@ impl Config {
         } else {
             Ok(value)
         }
+    }
+
+    /// Get Habitica credential from environment variable or .taskrc
+    /// Environment variables take precedence over .taskrc values
+    fn get_habitica_credential(env_var: &str, taskrc_key: &str) -> Result<String> {
+        // Check environment variable first
+        if let Ok(value) = env::var(env_var) {
+            let value = value.trim().to_string();
+            if !value.is_empty() {
+                return Ok(value);
+            }
+        }
+
+        Self::get_taskrc_value(taskrc_key)
     }
 
     /// Expand ~ in paths to home directory
