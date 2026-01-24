@@ -9,6 +9,19 @@ on:
       - master
 
 jobs:
+  commits:
+    name: Conventional Commits
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check conventional commits
+        uses: cocogitto/cocogitto-action@v3
+        with:
+          check: true
+
   lint:
     name: Lint
     runs-on: ubuntu-latest

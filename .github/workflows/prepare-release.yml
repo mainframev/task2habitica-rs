@@ -1,0 +1,170 @@
+name: Prepare Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Version bump type (leave as "auto" to detect from commits)'
+        required: true
+        type: choice
+        default: auto
+        options:
+          - auto
+          - patch
+          - minor
+          - major
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  prepare:
+    name: Prepare Release PR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install git-cliff
+        uses: taiki-e/install-action@git-cliff
+
+      - name: Get current version
+        id: current
+        run: |
+          VERSION=$(grep -m1 '^version' Cargo.toml | sed 's/.*"\(.*\)".*/\1/')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $VERSION"
+
+      - name: Detect bump type from commits
+        id: detect
+        run: |
+          # Get the latest tag or use initial commit if no tags exist
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          
+          if [ -z "$LATEST_TAG" ]; then
+            echo "No previous tags found, analyzing all commits"
+            COMMIT_RANGE="HEAD"
+          else
+            echo "Analyzing commits since $LATEST_TAG"
+            COMMIT_RANGE="$LATEST_TAG..HEAD"
+          fi
+          
+          # Check for breaking changes
+          if git log $COMMIT_RANGE --pretty=format:"%s%n%b" | grep -qE "(^.*!:|BREAKING CHANGE)"; then
+            DETECTED="major"
+          # Check for features
+          elif git log $COMMIT_RANGE --pretty=format:"%s" | grep -qE "^feat(\(.*\))?:"; then
+            DETECTED="minor"
+          else
+            DETECTED="patch"
+          fi
+          
+          echo "Detected bump type: $DETECTED"
+          echo "detected=$DETECTED" >> $GITHUB_OUTPUT
+
+      - name: Determine final bump type
+        id: bump
+        run: |
+          INPUT_BUMP="${{ inputs.bump }}"
+          DETECTED_BUMP="${{ steps.detect.outputs.detected }}"
+          
+          if [ "$INPUT_BUMP" = "auto" ]; then
+            FINAL_BUMP="$DETECTED_BUMP"
+            echo "Using auto-detected bump type: $FINAL_BUMP"
+          else
+            FINAL_BUMP="$INPUT_BUMP"
+            echo "Using manually specified bump type: $FINAL_BUMP"
+          fi
+          
+          echo "bump=$FINAL_BUMP" >> $GITHUB_OUTPUT
+
+      - name: Calculate new version
+        id: new
+        run: |
+          CURRENT="${{ steps.current.outputs.version }}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          
+          case "${{ steps.bump.outputs.bump }}" in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+          esac
+          
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "New version: $NEW_VERSION"
+
+      - name: Create release branch
+        run: |
+          git checkout -b release/v${{ steps.new.outputs.version }}
+
+      - name: Update version in Cargo.toml
+        run: |
+          sed -i 's/^version = ".*"/version = "${{ steps.new.outputs.version }}"/' Cargo.toml
+
+      - name: Generate changelog
+        run: |
+          git cliff --tag v${{ steps.new.outputs.version }} -o CHANGELOG.md
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit changes
+        run: |
+          git add Cargo.toml CHANGELOG.md
+          git commit -m "chore: prepare release ${{ steps.new.outputs.version }}"
+
+      - name: Push branch
+        run: |
+          git push origin release/v${{ steps.new.outputs.version }}
+
+      - name: Create Pull Request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Determine if bump was auto-detected or manual
+          if [ "${{ inputs.bump }}" = "auto" ]; then
+            BUMP_INFO="auto-detected as **${{ steps.bump.outputs.bump }}** from commit history"
+          else
+            BUMP_INFO="manually set to **${{ steps.bump.outputs.bump }}**"
+          fi
+
+          gh pr create \
+            --title "chore: release v${{ steps.new.outputs.version }}" \
+            --body "$(cat <<EOF
+          ## Release v${{ steps.new.outputs.version }}
+
+          This PR was automatically created by the **Prepare Release** workflow.
+
+          ### Changes
+          - Version bump: \`${{ steps.current.outputs.version }}\` → \`${{ steps.new.outputs.version }}\`
+          - Bump type: $BUMP_INFO
+          - Updated CHANGELOG.md
+
+          ### What happens next?
+          1. Review the changes in this PR
+          2. Merge when ready
+          3. A tag will be automatically created
+          4. The release workflow will build and publish
+
+          ---
+          *Triggered by @${{ github.actor }}*
+          EOF
+          )" \
+            --base master \
+            --head release/v${{ steps.new.outputs.version }}
