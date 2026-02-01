@@ -19,8 +19,9 @@ body = """
         - {% if commit.scope %}*({{ commit.scope }})* {% endif %}\
             {% if commit.breaking %}[**breaking**] {% endif %}\
             {{ commit.message | upper_first }}\
-            {% if commit.github.username %} by @{{ commit.github.username }}{%- endif %}\
-            {% if commit.github.pr_number %} in [#{{ commit.github.pr_number }}](https://github.com/mainframev/task2habitica-rs/pull/{{ commit.github.pr_number }}){%- endif %}\
+            {% if commit.remote.username %} by @{{ commit.remote.username }}{%- endif %}\
+            {% if commit.remote.pr_number %} in [#{{ commit.remote.pr_number }}](https://github.com/mainframev/task2habitica-rs/pull/{{ commit.remote.pr_number }}){%- endif %} \
+            ([commit](https://github.com/mainframev/task2habitica-rs/commit/{{ commit.id }}))\
     {% endfor %}
 {% endfor %}
 """
