@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] - 2026-02-01
+
+### Features
+
+- Add setup command by @mainframev
 ## [0.2.1] - 2026-01-24
 
 ### Fixes
