@@ -16,10 +16,20 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// Reads new task JSON from stdin, creates it on Habitica, and outputs
+    /// updated JSON with Habitica UUID
     Add,
+    /// Reads old/new task JSON from stdin, syncs changes to Habitica, and
+    /// outputs updated JSON
     Modify,
+    /// Displays accumulated Habitica stat changes (XP, gold, level) and clears
+    /// the stats cache
     Exit,
+    /// Performs bidirectional sync: pushes unlinked tasks to Habitica, pulls
+    /// new Habitica tasks, and resolves conflicts by modification time
     Sync,
+    /// Interactive wizard that installs Taskwarrior hooks, configures UDAs, and
+    /// prompts for Habitica API credentials
     Setup,
 }
 
