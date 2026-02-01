@@ -21,7 +21,15 @@ Bidirectional sync tool between [Taskwarrior](https://taskwarrior.org) and [Habi
 
 ```bash
 cargo install task2habitica
+task2habitica setup
 ```
+
+The `setup` command will interactively:
+- Install Taskwarrior hook scripts
+- Configure required UDAs in your `.taskrc`
+- Prompt for your Habitica credentials
+- Validate your API connection
+- Add credentials to your shell profile
 
 ### From Source
 
@@ -35,27 +43,29 @@ cargo build --release
 # Install the binary
 cp target/release/task2habitica /usr/local/bin/
 
-# Install the hook scripts
-mkdir -p ~/.task/hooks
-cp hooks/* ~/.task/hooks/
-chmod +x ~/.task/hooks/*.task2habitica
+# Run interactive setup
+task2habitica setup
 ```
 
 ## Configuration
 
-### 1. Add Habitica Credentials
+The `task2habitica setup` command handles all configuration automatically. If you prefer manual configuration, see the sections below.
+
+### Manual Configuration
+
+#### Habitica Credentials
 
 You can configure your Habitica credentials using either environment variables or your `.taskrc` file.
 Environment variables take precedence if both are set.
 
-#### Environment Variables (Recommended)
+##### Environment Variables (Recommended)
 
 ```bash
 export HABITICA_USER_ID=YOUR_USER_ID
 export HABITICA_API_KEY=YOUR_API_KEY
 ```
 
-#### .taskrc
+##### .taskrc
 
 Add your Habitica user ID and API key to your `taskrc` file:
 
@@ -66,9 +76,9 @@ habitica.api_key=YOUR_API_KEY
 
 You can find these in your Habitica account settings under _Site Data tab_.
 
-### 2. Add Required UDAs to .taskrc
+#### Required UDAs
 
-Add the following User Defined Attributes (UDAs) to your `taskrc`:
+Add the following User Defined Attributes (UDAs) to your `.taskrc` (automatically added by `task2habitica setup`):
 
 ```
 uda.habitica_uuid.label=Habitica UUID
@@ -83,7 +93,17 @@ uda.habitica_task_type.type=string
 uda.habitica_task_type.values=daily,todo
 ```
 
-### 3. Optional: Configure Task Notes
+#### Hook Scripts
+
+The setup command installs hook scripts to `~/.task/hooks/`. If you need to install them manually:
+
+```bash
+mkdir -p ~/.task/hooks
+cp hooks/* ~/.task/hooks/
+chmod +x ~/.task/hooks/*.task2habitica
+```
+
+#### Optional: Configure Task Notes
 
 By default, task notes are stored in `~/.task/notes/`. You can customize this:
 

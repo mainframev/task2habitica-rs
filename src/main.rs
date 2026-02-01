@@ -3,7 +3,6 @@ use std::{env, process};
 use clap::{Parser, Subcommand};
 use task2habitica::{commands, Config, Error};
 
-/// Sync Taskwarrior tasks with Habitica
 #[derive(Parser)]
 #[command(name = "task2habitica")]
 #[command(about = "Sync Taskwarrior tasks with Habitica", long_about = None)]
@@ -21,14 +20,13 @@ enum Commands {
     Modify,
     Exit,
     Sync,
+    Setup,
 }
 
-/// Check if we're running inside a sync operation
 fn is_sync_running() -> bool {
     env::var("TASK2HABITICA_RUNNING").is_ok()
 }
 
-/// Set environment variable to indicate sync is running
 fn set_sync_env() {
     env::set_var("TASK2HABITICA_RUNNING", "1");
 }
@@ -36,15 +34,15 @@ fn set_sync_env() {
 fn run() -> Result<(), Error> {
     let cli = Cli::parse();
 
-    // Load configuration
+    if matches!(cli.command, Commands::Setup) {
+        return commands::handle_setup();
+    }
+
     let config = Config::load(cli.verbose)?;
 
-    // Handle commands
     match cli.command {
         Commands::Add => {
-            // Skip if sync is running
             if is_sync_running() {
-                // Just pass through the input
                 use std::io::{self, BufRead};
                 let stdin = io::stdin();
                 let mut lines = stdin.lock().lines();
@@ -57,9 +55,7 @@ fn run() -> Result<(), Error> {
         }
 
         Commands::Modify => {
-            // Skip if sync is running
             if is_sync_running() {
-                // Just pass through the new task
                 use std::io::{self, BufRead};
                 let stdin = io::stdin();
                 let mut lines = stdin.lock().lines();
@@ -77,9 +73,12 @@ fn run() -> Result<(), Error> {
         }
 
         Commands::Sync => {
-            // Set environment variable to prevent hooks from running during sync
             set_sync_env();
             commands::handle_sync(&config)?;
+        }
+
+        Commands::Setup => {
+            unreachable!()
         }
     }
 
@@ -88,10 +87,7 @@ fn run() -> Result<(), Error> {
 
 fn main() {
     if let Err(err) = run() {
-        // Print error message
         eprintln!("Error: {}", err);
-
-        // Exit with error code
         process::exit(1);
     }
 }

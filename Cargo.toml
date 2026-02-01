@@ -34,6 +34,8 @@ uuid = { version = "1.6", features = ["serde", "v4"] }
 
 dirs = "5.0"
 
+dialoguer = "0.11"
+
 [dev-dependencies]
 mockito = "1.2"
 tempfile = "3.8"
