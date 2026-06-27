@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1] - 2026-06-27
+
+### Fixes
+
+- Resolve hooks directory for Taskwarrior 2.x and 3.x by @mainframev ([794987f](https://github.com/mainframev/task2habitica-rs/commit/794987fe5d130e747e5ad93e5caf04170a299da5))
 ## [0.3.0] - 2026-02-01
 
 ### Features
