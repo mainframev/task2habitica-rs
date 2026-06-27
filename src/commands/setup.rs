@@ -102,22 +102,40 @@ fn check_taskwarrior() -> Result<()> {
     Ok(())
 }
 
-/// Get the Taskwarrior hooks directory
-fn get_hooks_dir() -> Result<PathBuf> {
-    // Try to get from taskwarrior config first
-    let output = Command::new("task")
-        .args(["rc.hooks=off", "_get", "rc.data.location"])
+/// Read a Taskwarrior config value via `task _get`, returning an empty string
+/// if it is unset or the command fails.
+fn get_taskrc_value(key: &str) -> String {
+    Command::new("task")
+        .args(["rc.hooks=off", "_get", key])
         .output()
-        .map_err(|e| Error::config(format!("Failed to get task data location: {}", e)))?;
+        .ok()
+        .map(|output| String::from_utf8_lossy(&output.stdout).trim().to_string())
+        .unwrap_or_default()
+}
 
-    let data_location = String::from_utf8_lossy(&output.stdout).trim().to_string();
+/// Get the Taskwarrior hooks directory.
+///
+/// Resolution order (works for both Taskwarrior 2.x and 3.x):
+/// 1. `rc.hooks.location` — explicit override, takes precedence when set.
+/// 2. `<rc.data.location>/hooks` — the standard location. `rc.data.location`
+///    resolves to `~/.task` on a default 2.x setup and to the configured (often
+///    XDG `~/.local/share/task`) directory on 3.x.
+/// 3. `~/.task/hooks` — last-resort fallback if Taskwarrior reports nothing.
+fn get_hooks_dir() -> Result<PathBuf> {
+    // 1. Explicit hooks location override.
+    let hooks_location = get_taskrc_value("rc.hooks.location");
+    if !hooks_location.is_empty() {
+        return expand_path(&hooks_location);
+    }
 
+    // 2. Derive from the data location.
+    let data_location = get_taskrc_value("rc.data.location");
     if !data_location.is_empty() {
         let path = expand_path(&data_location)?;
         return Ok(path.join("hooks"));
     }
 
-    // Fallback to ~/.task/hooks
+    // 3. Fallback to ~/.task/hooks.
     let home =
         dirs::home_dir().ok_or_else(|| Error::config("Could not determine home directory"))?;
     Ok(home.join(".task").join("hooks"))

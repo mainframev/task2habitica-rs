@@ -95,12 +95,25 @@ uda.habitica_task_type.values=daily,todo
 
 #### Hook Scripts
 
-The setup command installs hook scripts to `~/.task/hooks/`. If you need to install them manually:
+The setup command installs hook scripts to your Taskwarrior hooks directory. This
+location differs between Taskwarrior versions, so resolve it from your own config
+instead of assuming a fixed path:
 
 ```bash
-mkdir -p ~/.task/hooks
-cp hooks/* ~/.task/hooks/
-chmod +x ~/.task/hooks/*.task2habitica
+# Taskwarrior looks for hooks in <data.location>/hooks (or rc.hooks.location if set).
+# This works for both Taskwarrior 2.x (default ~/.task) and 3.x (often ~/.local/share/task):
+HOOKS_DIR="$(task _get rc.hooks.location)"
+[ -z "$HOOKS_DIR" ] && HOOKS_DIR="$(task _get rc.data.location)/hooks"
+
+mkdir -p "$HOOKS_DIR"
+cp hooks/* "$HOOKS_DIR"/
+chmod +x "$HOOKS_DIR"/*.task2habitica
+```
+
+Verify Taskwarrior detects them as active:
+
+```bash
+task diagnostics | grep -A5 Hooks
 ```
 
 #### Optional: Configure Task Notes
